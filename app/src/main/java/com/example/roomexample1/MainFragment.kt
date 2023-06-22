@@ -1,13 +1,13 @@
 package com.example.roomexample1
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.roomexample1.adapter.TodoListAdapter
 import com.example.roomexample1.databinding.FragmentMainBinding
 import com.example.roomexample1.room.Importance
 import com.example.roomexample1.room.TodoItem
@@ -20,8 +20,10 @@ class MainFragment : Fragment() {
         fun newInstance() = MainFragment()
     }
 
-    private val viewModel:MainViewModel by viewModels()
-    private lateinit var binding:FragmentMainBinding
+    private val viewModel: MainViewModel by viewModels()
+    private var binding: FragmentMainBinding? = null
+    private val adapter: TodoListAdapter? get() = views { todoList.adapter as TodoListAdapter }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,11 +34,9 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.data.onEach(::updateUI).launchIn(lifecycleScope)
-
-        views{
+        views {
             floatingButton.setOnClickListener {
-                viewModel.addItem(
+                addItem(
                     TodoItem(
                         (0..1000).random().toString(),
                         "some text",
@@ -44,17 +44,26 @@ class MainFragment : Fragment() {
                     )
                 )
             }
+
+            todoList.adapter = TodoListAdapter()
+
         }
 
+
+        viewModel.data.onEach(::updateUI).launchIn(lifecycleScope)
+
     }
 
-    private fun updateUI(list:List<TodoItem>){
+    private fun updateUI(list: List<TodoItem>) {
+        adapter?.submitList(list)
+    }
 
+    private fun addItem(todoItem: TodoItem) {
+        viewModel.addItem(todoItem)
     }
 
 
-
-    private fun <T : Any> views(block: FragmentMainBinding.() -> T): T = binding.block()
+    private fun <T : Any> views(block: FragmentMainBinding.() -> T): T? = binding?.block()
 
 
 }
