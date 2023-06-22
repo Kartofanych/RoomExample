@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">RoomExample1</string>
+    <string name="my_deals">Мои дела</string>
 </resources>
