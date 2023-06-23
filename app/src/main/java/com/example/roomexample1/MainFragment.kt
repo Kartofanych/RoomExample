@@ -1,12 +1,15 @@
 package com.example.roomexample1
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.roomexample1.adapter.AdapterClickCallbacks
 import com.example.roomexample1.adapter.SwipeCallbackInterface
@@ -16,6 +19,7 @@ import com.example.roomexample1.databinding.FragmentMainBinding
 import com.example.roomexample1.room.TodoItem
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class MainFragment : Fragment() {
 
@@ -34,6 +38,12 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         views {
+            if(savedInstanceState!=null){
+                if(savedInstanceState.getBoolean("modeAll")){
+                    visibility.setImageResource(R.drawable.ic_invisible)
+                }
+            }
+
             floatingButton.setOnClickListener {
                 val action = MainFragmentDirections.manageFragmentAction(itemId = "-1")
                 findNavController().navigate(action)
@@ -75,13 +85,24 @@ class MainFragment : Fragment() {
         }
 
 
-        viewModel.loadData()
-        viewModel.data.onEach(::updateUI).launchIn(lifecycleScope)
+        viewModel.getData()
+        viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.data.collect {
+                    updateUI(it)
+                }
+        }
+
 
     }
 
     private fun updateUI(list: List<TodoItem>) {
+        Log.d("1111",list.size.toString())
         adapter?.submitList(list)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("modeAll", viewModel.modeAll)
     }
 
 

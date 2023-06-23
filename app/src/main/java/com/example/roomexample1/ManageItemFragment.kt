@@ -6,7 +6,6 @@ import android.text.SpannableString
 import android.text.format.DateFormat
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -16,20 +15,18 @@ import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
+import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.roomexample1.databinding.FragmentManageItemBinding
 import com.example.roomexample1.room.Importance
 import com.example.roomexample1.room.TodoItem
-import kotlinx.coroutines.flow.collect
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import java.util.Calendar
 import java.util.Date
 
@@ -54,8 +51,8 @@ class ManageItemFragment : Fragment() {
         System.currentTimeMillis(),
         null
     )
-    private lateinit var popupMenu : PopupMenu
-    private lateinit var timePickerDialog : DatePickerDialog
+    private lateinit var popupMenu: PopupMenu
+    private lateinit var timePickerDialog: DatePickerDialog
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -69,29 +66,47 @@ class ManageItemFragment : Fragment() {
 
         Log.d("1", args.itemId)
         createPopupMenu()
-        when (args.itemId) {
-            "-1" -> {
-                //new item
-                loadItemInfo()
-                setUpViews()
-            }
 
-            else -> {
-                //not new item
-                viewModel.getItem(args.itemId).onEach {
-                    if(item.id == "-1") {
-                        item = it
-                        loadItemInfo()
-                        setUpViews()
-                    }
-                }.launchIn(lifecycleScope)
-            }
+        if (args.itemId != "-1") {
+            //not new item
+            viewModel.loadItem(args.itemId)
+            viewModel.item.onEach {
+                if (item.id == "-1") {
+                    item = it
+                    loadItemInfo()
+                }
+            }.launchIn(lifecycleScope)
         }
-        //saved instance
 
 
+        if (savedInstanceState != null) {
+            val gson = Gson()
+            item = gson.fromJson(savedInstanceState.getString("currentItem"), TodoItem::class.java)
+            loadItemInfo()
+        }
 
+        setUpViews()
 
+    }
+
+    private fun saveStates() {
+        views {
+            item.text = editTodo.text.toString()
+            when (importanceText.text) {
+                "!!Высокая" -> {
+                    item.importance = Importance.HIGH
+                }
+
+                "Нет" -> {
+                    item.importance = Importance.MIDDLE
+                }
+
+                "Низкая" -> {
+                    item.importance = Importance.LOW
+                }
+            }
+
+        }
     }
 
     private fun loadItemInfo() {
@@ -100,9 +115,11 @@ class ManageItemFragment : Fragment() {
                 Importance.LOW -> {
                     importanceText.text = "Низкая"
                 }
+
                 Importance.MIDDLE -> {
                     importanceText.text = "Нет"
                 }
+
                 Importance.HIGH -> {
                     importanceText.text = "!!Высокая"
                 }
@@ -110,13 +127,14 @@ class ManageItemFragment : Fragment() {
 
             editTodo.setText(item.text)
 
-            if(item.deadline != null){
+            if (item.deadline != null) {
                 date.visibility = View.VISIBLE
-                date.text = DateFormat.format("hh:mm:ss, MMM dd, yyyy", Date(item.deadline!!)).toString()
+                date.text =
+                    DateFormat.format("hh:mm:ss, MMM dd, yyyy", Date(item.deadline!!)).toString()
                 switchCompat.isChecked = true
             }
 
-            if(args.itemId != "-1") {
+            if (args.itemId != "-1") {
                 delete.setTextColor(
                     AppCompatResources.getColorStateList(
                         requireContext(),
@@ -134,7 +152,6 @@ class ManageItemFragment : Fragment() {
         }
 
     }
-
 
 
     private fun createPopupMenu() {
@@ -199,7 +216,7 @@ class ManageItemFragment : Fragment() {
     private fun setUpViews() {
 
         val myCalendar = Calendar.getInstance()
-        if(item.deadline != null){
+        if (item.deadline != null) {
             myCalendar.timeInMillis = item.deadline!!
         }
 
@@ -213,7 +230,8 @@ class ManageItemFragment : Fragment() {
                     myCalendar.set(Calendar.DAY_OF_MONTH, day)
                     item.deadline = myCalendar.timeInMillis
                     date.visibility = View.VISIBLE
-                    date.text = DateFormat.format("hh:mm:ss, MMM dd, yyyy", Date(item.deadline!!)).toString()
+                    date.text = DateFormat.format("hh:mm:ss, MMM dd, yyyy", Date(item.deadline!!))
+                        .toString()
                 }, myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH), myCalendar.get(
                     Calendar.DAY_OF_MONTH
                 )
@@ -226,8 +244,8 @@ class ManageItemFragment : Fragment() {
             }
 
 
-            switchCompat.setOnCheckedChangeListener { _, checked ->
-                if (checked) {
+            switchCompat.setOnClickListener {
+                if (switchCompat.isChecked) {
                     openDatePicker()
                 } else {
                     date.visibility = View.INVISIBLE
@@ -273,7 +291,6 @@ class ManageItemFragment : Fragment() {
     }
 
 
-
     private fun saveNewTask() {
         item.id = (0..1000).random().toString()
         views {
@@ -281,8 +298,9 @@ class ManageItemFragment : Fragment() {
         }
         item.dateCreation = System.currentTimeMillis()
         //
-        if(item.text.isEmpty()){
-            Toast.makeText(requireContext(), "Заполните что нужно сделать!", Toast.LENGTH_SHORT).show()
+        if (item.text.isEmpty()) {
+            Toast.makeText(requireContext(), "Заполните что нужно сделать!", Toast.LENGTH_SHORT)
+                .show()
             return
         }
 
@@ -297,8 +315,9 @@ class ManageItemFragment : Fragment() {
         views {
             item.text = editTodo.text.toString()
         }
-        if(item.text.isEmpty()){
-            Toast.makeText(requireContext(), "Заполните что нужно сделать!", Toast.LENGTH_SHORT).show()
+        if (item.text.isEmpty()) {
+            Toast.makeText(requireContext(), "Заполните что нужно сделать!", Toast.LENGTH_SHORT)
+                .show()
             return
         }
 
@@ -307,18 +326,19 @@ class ManageItemFragment : Fragment() {
         findNavController().navigate(action)
     }
 
-    private fun openDatePicker(){
+    private fun openDatePicker() {
         views {
             switchCompat.isChecked = true
         }
         timePickerDialog.show()
     }
 
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("todoItem", item.toString())
+        saveStates()
+        outState.putString("currentItem", item.toString())
     }
+
 
     private fun <T : Any> views(block: FragmentManageItemBinding.() -> T): T? = binding?.block()
 

@@ -80,13 +80,11 @@ class ListViewHolder(private val binding: ElementListBinding): RecyclerView.View
             checkBox.setOnClickListener {
                 //todoItem.done = binding.checkBox.isChecked
                 callbacks.onCheckClick(todoItem.id, checkBox.isChecked)
-                //notifyItemChanged(absoluteAdapterPosition)
             }
 
 
             itemView.setOnClickListener {
                 callbacks.onItemClick(todoItem.id)
-
             }
         }
     }

@@ -1,10 +1,12 @@
 package com.example.roomexample1
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.roomexample1.repository.Repository
 import com.example.roomexample1.room.TodoItem
 import com.example.roomexample1.utils.localeLazy
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -20,18 +22,32 @@ class MainViewModel : ViewModel() {
 
     val data = MutableSharedFlow<List<TodoItem>>()
 
-    init {
-        loadData()
-    }
+    val item = MutableSharedFlow<TodoItem>()
 
+
+
+    var job: Job? = null
     fun changeMode() {
+        job?.cancel()
         modeAll = !modeAll
-        loadData()
+        getData()
+    }
+    fun getData(){
+        when(modeAll) {
+            true-> loadAllData()
+            false-> loadToDoData()
+        }
     }
 
-    fun loadData() {
-        viewModelScope.launch {
-            data.emitAll(repository.getList(modeAll).asLiveDataFlow())
+    private fun loadToDoData() {
+        job = viewModelScope.launch {
+            data.emitAll(repository.getTodoList().asLiveDataFlow())
+
+        }
+    }
+    private fun loadAllData() {
+        job = viewModelScope.launch {
+            data.emitAll(repository.getList().asLiveDataFlow())
         }
     }
 
@@ -60,8 +76,10 @@ class MainViewModel : ViewModel() {
     }
 
 
-    fun getItem(id: String): SharedFlow<TodoItem> {
-        return repository.getItem(id).asLiveDataFlow()
+    fun loadItem(id: String) {
+        viewModelScope.launch {
+            item.emitAll(repository.getItem(id).asLiveDataFlow())
+        }
     }
 
 

@@ -1,5 +1,6 @@
 package com.example.roomexample1.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.example.roomexample1.room.TodoItem
 import com.example.roomexample1.room.TodoListDatabase
@@ -10,10 +11,8 @@ class Repository(
 ) {
     private val dao = db.listDao
 
-    fun getList(modeAll: Boolean): Flow<List<TodoItem>> = when (modeAll) {
-        true -> dao.getAll()
-        false -> dao.getToDo()
-    }
+    fun getList(): Flow<List<TodoItem>> = dao.getAll()
+    fun getTodoList():Flow<List<TodoItem>> = dao.getToDo()
 
     fun getItem(itemId: String): Flow<TodoItem> = dao.getItem(itemId)
 
