@@ -5,9 +5,13 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "todolist")
 data class TodoItem(
-    @PrimaryKey val id:String,
+    @PrimaryKey var id:String,
     var text:String,
     var importance: Importance,
+    var deadline : Long?,
+    var done : Boolean,
+    var dateCreation : Long,
+    var dateChanged : String?
 )
 
 

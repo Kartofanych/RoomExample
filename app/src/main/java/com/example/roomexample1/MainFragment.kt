@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.roomexample1.adapter.AdapterClickCallbacks
 import com.example.roomexample1.adapter.TodoListAdapter
 import com.example.roomexample1.databinding.FragmentMainBinding
 import com.example.roomexample1.room.Importance
@@ -36,16 +38,21 @@ class MainFragment : Fragment() {
 
         views {
             floatingButton.setOnClickListener {
-                addItem(
-                    TodoItem(
-                        (0..1000).random().toString(),
-                        "some text",
-                        Importance.MIDDLE
-                    )
-                )
+                val action = MainFragmentDirections.manageFragmentAction(itemId = "-1")
+                findNavController().navigate(action)
             }
 
-            todoList.adapter = TodoListAdapter()
+            todoList.adapter = TodoListAdapter(object : AdapterClickCallbacks{
+                override fun onItemClick(id:String) {
+                    val action = MainFragmentDirections.manageFragmentAction(itemId = id)
+                    findNavController().navigate(action)
+                }
+
+                override fun onCheckClick(id:String, done:Boolean){
+                    viewModel.changeItemDone(id,done)
+                }
+
+            })
 
         }
 
