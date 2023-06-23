@@ -42,7 +42,7 @@ class ListViewHolder(private val binding: ElementListBinding): RecyclerView.View
                 checkBox.isChecked = false
                 if(todoItem.deadline != null) {
                     deadline.visibility = View.VISIBLE
-                    deadline.text = DateFormat.format("hh:mm:ss, MMM dd, yyyy", Date(todoItem.deadline!!)).toString()
+                    deadline.text = DateFormat.format("MMM dd, yyyy", Date(todoItem.deadline!!)).toString()
                 }else{
                     deadline.visibility = View.GONE
                 }
@@ -78,7 +78,6 @@ class ListViewHolder(private val binding: ElementListBinding): RecyclerView.View
             }
 
             checkBox.setOnClickListener {
-                //todoItem.done = binding.checkBox.isChecked
                 callbacks.onCheckClick(todoItem.id, checkBox.isChecked)
             }
 

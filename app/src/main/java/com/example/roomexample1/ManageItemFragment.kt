@@ -122,6 +122,12 @@ class ManageItemFragment : Fragment() {
 
                 Importance.HIGH -> {
                     importanceText.text = "!!Высокая"
+                    importanceText.setTextColor(
+                        ContextCompat.getColor(
+                            requireContext(),
+                            R.color.red
+                        )
+                    )
                 }
             }
 
@@ -130,7 +136,7 @@ class ManageItemFragment : Fragment() {
             if (item.deadline != null) {
                 date.visibility = View.VISIBLE
                 date.text =
-                    DateFormat.format("hh:mm:ss, MMM dd, yyyy", Date(item.deadline!!)).toString()
+                    DateFormat.format("MMM dd, yyyy", Date(item.deadline!!)).toString()
                 switchCompat.isChecked = true
             }
 
@@ -230,7 +236,7 @@ class ManageItemFragment : Fragment() {
                     myCalendar.set(Calendar.DAY_OF_MONTH, day)
                     item.deadline = myCalendar.timeInMillis
                     date.visibility = View.VISIBLE
-                    date.text = DateFormat.format("hh:mm:ss, MMM dd, yyyy", Date(item.deadline!!))
+                    date.text = DateFormat.format("MMM dd, yyyy", Date(item.deadline!!))
                         .toString()
                 }, myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH), myCalendar.get(
                     Calendar.DAY_OF_MONTH
