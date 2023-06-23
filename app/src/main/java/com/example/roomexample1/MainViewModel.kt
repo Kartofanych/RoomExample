@@ -1,25 +1,39 @@
 package com.example.roomexample1
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.roomexample1.repository.Repository
 import com.example.roomexample1.room.TodoItem
 import com.example.roomexample1.utils.localeLazy
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
     private val repository: Repository by localeLazy()
+    var modeAll: Boolean = false
 
-    val data = repository.getList().asLiveDataFlow()
+    val data = MutableSharedFlow<List<TodoItem>>()
+
+    init {
+        loadData()
+    }
+
+    fun changeMode() {
+        modeAll = !modeAll
+        loadData()
+    }
+
+    fun loadData() {
+        viewModelScope.launch {
+            data.emitAll(repository.getList(modeAll).asLiveDataFlow())
+        }
+    }
 
     fun addItem(todoItem: TodoItem) {
         viewModelScope.launch {
@@ -46,10 +60,9 @@ class MainViewModel : ViewModel() {
     }
 
 
-    fun getItem(id: String):SharedFlow<TodoItem>{
+    fun getItem(id: String): SharedFlow<TodoItem> {
         return repository.getItem(id).asLiveDataFlow()
     }
-
 
 
     private fun <T> Flow<T>.asLiveDataFlow() =

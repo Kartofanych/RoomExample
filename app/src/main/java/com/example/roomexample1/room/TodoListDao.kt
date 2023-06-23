@@ -9,12 +9,15 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface TodoListDao{
+interface TodoListDao {
     @Query("SELECT * FROM todolist")
     fun getAll(): Flow<List<TodoItem>>
 
+    @Query("SELECT * FROM todolist WHERE done == 0")
+    fun getToDo(): Flow<List<TodoItem>>
+
     @Query("SELECT * FROM todolist WHERE id=:itemId")
-    fun getItem(itemId:String):Flow<TodoItem>
+    fun getItem(itemId: String): Flow<TodoItem>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(todoItem: TodoItem)

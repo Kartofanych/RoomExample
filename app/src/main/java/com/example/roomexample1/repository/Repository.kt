@@ -6,28 +6,31 @@ import com.example.roomexample1.room.TodoListDatabase
 import kotlinx.coroutines.flow.Flow
 
 class Repository(
-    db:TodoListDatabase
+    db: TodoListDatabase
 ) {
     private val dao = db.listDao
 
-    fun getList(): Flow<List<TodoItem>> = dao.getAll()
+    fun getList(modeAll: Boolean): Flow<List<TodoItem>> = when (modeAll) {
+        true -> dao.getAll()
+        false -> dao.getToDo()
+    }
 
-    fun getItem(itemId:String): Flow<TodoItem> = dao.getItem(itemId)
+    fun getItem(itemId: String): Flow<TodoItem> = dao.getItem(itemId)
 
-    suspend fun addItem(todoItem: TodoItem){
+    suspend fun addItem(todoItem: TodoItem) {
         dao.add(todoItem)
     }
 
-    suspend fun deleteItem(todoItem: TodoItem){
+    suspend fun deleteItem(todoItem: TodoItem) {
         dao.delete(todoItem)
     }
 
-    suspend fun changeItem(newItem: TodoItem){
+    suspend fun changeItem(newItem: TodoItem) {
         dao.update(newItem)
     }
 
     suspend fun changeDone(id: String, done: Boolean) {
-        dao.updateDone(id,done)
+        dao.updateDone(id, done)
     }
 
 

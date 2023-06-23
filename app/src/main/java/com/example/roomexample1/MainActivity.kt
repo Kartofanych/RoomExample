@@ -14,11 +14,9 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container)
                     as NavHostFragment
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+
         controller = navHostFragment.navController
 
     }
 
-    //private fun <T : Any> views(block: FragmentMainBinding.() -> T): T? = binding?.block()
 }

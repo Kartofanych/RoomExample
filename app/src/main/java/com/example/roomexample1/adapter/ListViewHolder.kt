@@ -15,7 +15,7 @@ import java.util.Date
 
 class ListViewHolder(private val binding: ElementListBinding): RecyclerView.ViewHolder(binding.root){
 
-    private var todoItem: TodoItem? = null
+    var todoItem: TodoItem? = null
 
     fun onBind(todoItem: TodoItem, callbacks: AdapterClickCallbacks){
         this.todoItem = todoItem
